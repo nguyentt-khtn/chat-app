@@ -2,7 +2,7 @@ import { configureStore } from '@reduxjs/toolkit'
 import userReducer from '../app/userSlice'
 
 const rootReducer = {
-    user: userReducer,
+    userReducer
 
 }
 
