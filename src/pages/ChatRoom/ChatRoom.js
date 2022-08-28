@@ -3,10 +3,25 @@ import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import { Avatar, Button, Stack, Typography } from "@mui/material";
 import { Logout } from "@mui/icons-material";
-import { auth } from "../../firebase/config";
+import { auth, db } from "../../firebase/config";
 import { useNavigate } from "react-router-dom";
+import { collection, doc, onSnapshot, query } from "firebase/firestore";
 
 export default function ChatRoom(props) {
+
+  React.useEffect(() => {
+    const q = query(collection(db, "userList"));
+    console.log(q)
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const data = querySnapshot.docs.map((doc) => {
+        return { ...doc.data(), id: doc.id }
+      })
+
+    });
+    return () => {
+      unsubscribe()
+    }
+  }, [])
   const navigate = useNavigate();
   const { uid, email, photoURL, displayName } = JSON.parse(
     localStorage.getItem("USER")

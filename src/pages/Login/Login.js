@@ -1,21 +1,29 @@
-import React, { useState } from "react";
+import React from "react";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
 import { FacebookAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "../../firebase/config";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { loginUser } from "../../app/userSlice";
-
-const fbProvider = new FacebookAuthProvider();
+import { addNewUserIntoDb } from "../../firebase/services";
 
 export default function Login() {
   const dispatch = useDispatch();
+  const fbProvider = new FacebookAuthProvider();
 
   const navigate = useNavigate();
 
-  const handleFbLogin = () => {
-    signInWithPopup(auth, fbProvider);
+  const handleFbLogin = async () => {
+    const { _tokenResponse, user } = await signInWithPopup(auth, fbProvider);
+    if (_tokenResponse?.isNewUser) {
+      addNewUserIntoDb('userList', {
+        email: user.email,
+        displayName: user.displayName,
+        uid: user.uid,
+        photoURL: user.photoURL,
+        providerId: _tokenResponse.providerId
+      })
+    }
   };
   auth.onAuthStateChanged(async (user) => {
     if (user) {
@@ -27,7 +35,7 @@ export default function Login() {
         photoURL,
       };
       // await dispatch(loginUser(userInfo));
-      await localStorage.setItem('USER',JSON.stringify(userInfo))
+      await localStorage.setItem('USER', JSON.stringify(userInfo))
       navigate("/chatroom");
     }
   });
