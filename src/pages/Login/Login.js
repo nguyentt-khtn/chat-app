@@ -1,7 +1,11 @@
 import React from "react";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
-import { FacebookAuthProvider, signInWithPopup } from "firebase/auth";
+import {
+  FacebookAuthProvider,
+  GoogleAuthProvider,
+  signInWithPopup,
+} from "firebase/auth";
 import { auth } from "../../firebase/config";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
@@ -11,18 +15,32 @@ export default function Login() {
   const dispatch = useDispatch();
   const fbProvider = new FacebookAuthProvider();
 
+  const ggProvider = new GoogleAuthProvider();
+
   const navigate = useNavigate();
 
   const handleFbLogin = async () => {
     const { _tokenResponse, user } = await signInWithPopup(auth, fbProvider);
     if (_tokenResponse?.isNewUser) {
-      addNewUserIntoDb('userList', {
+      addNewUserIntoDb("userList", {
         email: user.email,
         displayName: user.displayName,
         uid: user.uid,
         photoURL: user.photoURL,
-        providerId: _tokenResponse.providerId
-      })
+        providerId: _tokenResponse.providerId,
+      });
+    }
+  };
+  const handleGgLogin = async () => {
+    const { _tokenResponse, user } = await signInWithPopup(auth, ggProvider);
+    if (_tokenResponse?.isNewUser) {
+      addNewUserIntoDb("userList", {
+        email: user.email,
+        displayName: user.displayName,
+        uid: user.uid,
+        photoURL: user.photoURL,
+        providerId: _tokenResponse.providerId,
+      });
     }
   };
   auth.onAuthStateChanged(async (user) => {
@@ -35,7 +53,7 @@ export default function Login() {
         photoURL,
       };
       // await dispatch(loginUser(userInfo));
-      await localStorage.setItem('USER', JSON.stringify(userInfo))
+      await localStorage.setItem("USER", JSON.stringify(userInfo));
       navigate("/chatroom");
     }
   });
@@ -43,6 +61,9 @@ export default function Login() {
     <Stack spacing={2} direction="row">
       <Button variant="contained" onClick={handleFbLogin}>
         Sign in with Facebook
+      </Button>
+      <Button variant="contained" onClick={handleGgLogin}>
+        Sign in with Google
       </Button>
     </Stack>
   );
